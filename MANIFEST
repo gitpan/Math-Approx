@@ -3,3 +3,4 @@ MANIFEST
 Approx.pm
 Makefile.PL
 ChangeLog
+META.yml                                 Module meta-data (added by MakeMaker)

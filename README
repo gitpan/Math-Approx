@@ -3,7 +3,6 @@ NAME
 
 METHODS
   new (constructor)
-
         Math::Approx->new(\&poly, $degree, %data);
 
     If the first argument to the constructor is a CODE reference, this is
@@ -30,20 +29,17 @@ METHODS
     The constructor returns a Math::Approx reference.
 
   approx
-
             $approximation->approx(17);
 
     The method returns the approximated y value for the x value given as
     argument.
 
   fit
-
             $approximation->fit;
 
     Returns the medim square error for the data points.
 
   plot
-
             $approximation->plot("tmp/app");
 
     Prints all data pairs and the corresponding approximation pairs into the
@@ -51,23 +47,22 @@ METHODS
     gnuplot(1).
 
   print
-
             $approximation->print;
 
     Prints information about the approximation on *STDOUT*
 
 EXAMPLE
             use Math::Approx;
-            
+        
             sub poly {
                 my($n,$x) = @_;
                 return $x ** $n;
             }
-            
+        
             for (1..20) {
                 $x{$_} = sin($_/10)*cos($_/30)+0.3*rand;
             }
-            
+        
             $a = new Math::Approx (\&poly, 5, %x);
             $a->print;
             $a->plot("math-approx-demo.out");
