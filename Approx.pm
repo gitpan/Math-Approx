@@ -1,25 +1,13 @@
-#!/usr/local/ls6/perl/bin/perl
 #                              -*- Mode: Perl -*- 
-# Approx.pm -- 
-# ITIID           : $ITI$ $Header $__Header$
+# $Basename: Approx.pm $
+# $Revision: 1.2 $
 # Author          : Ulrich Pfeifer
 # Created On      : Wed Oct 25 10:50:38 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Wed Oct 25 12:47:41 1995
+# Last Modified On: Tue Mar  3 15:14:30 1998
 # Language        : Perl
-# Update Count    : 57
-# Status          : Unknown, Use with caution!
 # 
-# (C) Copyright 1995, Universität Dortmund, all rights reserved.
-# 
-# $Locker:  $
-# $Log: Approx.pm,v $
-# Revision 1.2  1995/10/25  12:38:59  pfeifer
-# Added documentation.
-#
-# Revision 1.1  1995/10/25  10:29:26  pfeifer
-# Initial revision
-#
+# (C) Copyright 1995,1998, Ulrich Pfeifer
 # 
 
 =head1 NAME
@@ -28,28 +16,32 @@ Math::Approx
 
 =head1 METHODS
 
-=head2 new
+=head2 new (constructor)
 
-    new Math::Approx (\&poly, 5, %x);
+    Math::Approx->new(\&poly, $degree, %data);
 
-The first argument after the class name must be a reference to
-function which takes two arguments: The I<degree> and the I<x> value.
+If the first argument to the constructor is a CODE reference, this is
+used as the function to iterate over the data. Such a function must
+take two arguments: The I<degree> and the I<x> value.
 
 For interpolation with plain polynomials I<poly> can be defined as:
 
         sub poly {
             my($n,$x) = @_;
-        
             return $x ** $n;
         }
 
+If the first argument in the constructor is a FALSE value instead of a
+CODE reference, then the above plain polynomial I<poly> is used as the
+iterator function.
+
 The second argument is the maximum degree which should be used for
-interpolation. Degrees start with B<0>. 
+interpolation. Degrees start with B<0>.
 
 The rest of the arguments are treated as pairs of B<x> and B<y>
 samples which should be approximated.
 
-The method returns a Math::Approx reference.
+The constructor returns a Math::Approx reference.
 
 =head2 approx
 
@@ -68,9 +60,9 @@ Returns the medim square error for the data points.
 
  	$approximation->plot("tmp/app");
 
-Prints all data pairs and the corresponding approximation pairs in a
-file whichs filename is given as argument. The file should be suitable
-for usage with gnuplot(1).
+Prints all data pairs and the corresponding approximation pairs into
+the filename given as argument. The output is suitable for usage with
+gnuplot(1).
 
 
 =head2 print
@@ -85,7 +77,6 @@ Prints information about the approximation on I<STDOUT>
         
         sub poly {
             my($n,$x) = @_;
-        
             return $x ** $n;
         }
         
@@ -95,7 +86,7 @@ Prints information about the approximation on I<STDOUT>
         
         $a = new Math::Approx (\&poly, 5, %x);
         $a->print;
-        $a->plot("mist");
+        $a->plot("math-approx-demo.out");
         print "Fit: ", $a->fit, "\n";
 
 =head1 SEE ALSO
@@ -104,22 +95,29 @@ gnuplot(1).
 
 =head1 AUTHOR
 
-Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
+Ulrich Pfeifer E<lt>F<pfeifer@wait.de>E<gt>
 
 =cut
 
 
 package Math::Approx;
 use Math::Matrix;
+use 5.004;
+use strict;
+use vars qw($VERSION);
 
-$RCS_Id = '$Id: Approx.pm,v 1.2 1995/10/25 12:38:59 pfeifer Exp $ ';
-($my_name, $my_version) = $RCS_Id =~ /: (.+).pm,v ([\d.]+)/;
+# $Format: "$VERSION = sprintf '%5.3f', $ProjectVersion$;"$
+$VERSION = sprintf '%5.3f', 0.2;
 
 sub new {
     my $type = shift;
-    my $func = shift;
+    my $func = shift || sub {my($n,$x)=@_; $x**$n;};
     my $degr = shift;
+    die "Math::Approx->new : invalid degree [$degr]" unless $degr;
+
     my %data = @_;
+    die "Math::Approx->new : empty data set" unless %data;
+
     my $self = {};
     my @m;
     my @x;
@@ -128,9 +126,9 @@ sub new {
     $self->{'N'} = $degr;
     $self->{'D'} = \%data;
 
-    for $x (keys %data) {
+    for my $x (keys %data) {
         my $row = [];
-        for $n (0 .. $degr) {
+        for my $n (0 .. $degr) {
             push @{$row}, &{$func}($n, $x);
         }
         push @x, $data{$x};
@@ -155,7 +153,7 @@ sub approx {
     my $degr = $self->{'N'};
     my $result;
 
-    for $n (0 .. $degr) {
+    for my $n (0 .. $degr) {
         $result += &{$func}($n, $x) * $self->{'A'}->[$n];
     }
 
@@ -167,7 +165,7 @@ sub fit {
     my $result;
     my $n;
 
-    for $key (keys %{$self->{'D'}}) {
+    for my $key (keys %{$self->{'D'}}) {
         $result += ($self->{'D'}->{$key}-$self->approx($key))**2;
         #print STDERR "## $result\n";
         $n++;
@@ -185,7 +183,7 @@ sub print {
     print  "Fit: ",    $self->fit, "\n";
     print  "Data:\n";
     print  "     X          Y     Approximation\n";
-    for $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
+    for my $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
         printf("%10.5f %10.5f %10.5f\n", $key, $self->{'D'}->{$key}, 
                $self->approx($key));
     }
@@ -197,12 +195,12 @@ sub plot {
     open(OUT, ">$file") || die "Could not open $file: $!\n";
     
     print OUT "\n#data\n";
-    for $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
+    for my $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
         print OUT $key, ' ', $self->{'D'}->{$key}, "\n";
     }
 
     print OUT "\n#Approximation\n";
-    for $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
+    for my $key (sort {$a <=> $b} keys %{$self->{'D'}}) {
         print OUT $key, ' ', $self->approx($key), "\n";
     }
     close(OUT);

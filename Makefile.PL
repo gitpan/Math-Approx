@@ -1,31 +1,27 @@
-#!/usr/local/ls6/perl/bin/perl
 #                              -*- Mode: Perl -*- 
-# Makefile.PL -- 
-# ITIID           : $ITI$ $Header $__Header$
+# $Basename: Makefile.PL $
+# $Revision: 1.2 $
 # Author          : Ulrich Pfeifer
 # Created On      : Fri Oct 27 11:19:11 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Fri Oct 27 11:39:49 1995
+# Last Modified On: Tue Mar  3 15:15:40 1998
 # Language        : Perl
-# Update Count    : 8
-# Status          : Unknown, Use with caution!
 # 
-# (C) Copyright 1995, Universität Dortmund, all rights reserved.
-# 
-# $Locker$
-# $Log$
+# (C) Copyright 1995,1998, Ulrich Pfeifer
 # 
 
 
 use ExtUtils::MakeMaker;
-use Config;
 
-$Version = '0.1';
-
-&WriteMakefile(
-               'NAME'     => 'Math::Approx',
-               'LINKTYPE' => '$(INST_PM)',,
-               'VERSION'  => $Version,
-               'dist'     => { SUFFIX => 'gz', COMPRESS => 'gzip -f' },
-               'clean' 	  => {'FILES' => '*~'},
-);
+&WriteMakefile
+  (
+   'NAME'          => 'Math::Approx',
+# $Format: "    'VERSION' => sprintf('%5.3f', $ProjectVersion$),"$
+    'VERSION' => sprintf('%5.3f', 0.2),
+   'dist'          => {
+                       COMPRESS => 'gzip -9f',
+                       PREOP    => 'pod2text Approx.pm > README',
+                      },
+   'clean' 	   => {'FILES' => '*~'},
+   'PREREQ_PM'     => { 'Math::Matrix' => 0},
+  );
