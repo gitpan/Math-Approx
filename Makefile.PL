@@ -17,7 +17,7 @@ use ExtUtils::MakeMaker;
   (
    'NAME'          => 'Math::Approx',
 # $Format: "    'VERSION' => sprintf('%5.3f', $ProjectVersion$),"$
-    'VERSION' => sprintf('%5.3f', 0.21),
+    'VERSION' => sprintf('%5.3f', 0.22),
    'dist'          => {
                        COMPRESS => 'gzip -9f',
                        PREOP    => 'pod2text Approx.pm > README',
